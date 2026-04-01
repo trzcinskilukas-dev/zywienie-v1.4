@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kalkulator żywienia</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#0078ff" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <link rel="icon" sizes="192x192" href="./icon-192.png" />
+  <link rel="icon" sizes="512x512" href="./icon-512.png" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f0f3f7;
+      color: #1a1a1a;
+    }
+    h1 { text-align: center; margin-bottom: 25px; }
+    .status {
+      max-width: 560px;
+      margin: 0 auto 16px auto;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #fff7d6;
+      border: 1px solid #f0d77a;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .nav {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 25px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .nav button {
+      padding: 10px 20px;
+      border: none;
+      background: #dce7ff;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .nav .active { background: #0078ff; color: white; }
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 560px;
+      margin: auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    .action {
+      width: 100%;
+      padding: 12px;
+      margin-top: 14px;
+      background: #0078ff;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 17px;
+      cursor: pointer;
+    }
+    .secondary { background: #2b9348; }
+    .muted { background: #6c757d; }
+    .result {
+      background: #e6f1ff;
+      padding: 18px;
+      margin-top: 20px;
+      border-left: 5px solid #0078ff;
+      border-radius: 10px;
+      display: none;
+      line-height: 1.5;
+    }
+    .drug-inputs {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .drug-card {
+      background: #f9fbff;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      border: 1px solid #dbe7ff;
+    }
+    .drug-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .drug-meta {
+      font-size: 14px;
+      color: #444;
+      margin-top: 6px;
+    }
+    .link {
+      color: #0078ff;
+      cursor: pointer;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 14px;
+    }
+    .small {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <h1>Kalkulator żywienia</h1>
+
+  <div id="push-status" class="status">Status powiadomień: sprawdzam...</div>
+
+  <div class="nav">
+    <button id="tab-zywienie" class="active" type="button">Żywienie</button>
+    <button id="tab-leki" type="button">Leki</button>
+  </div>
+
+  <div id="page-zywienie" class="card">
+    <label for="dzienna">Porcja dzienna (ml)</label>
+    <input id="dzienna" type="number" min="0" inputmode="numeric" />
+
+    <label for="zoladek_ml">Podanie do żołądka – ilość (ml)</label>
+    <input id="zoladek_ml" type="number" min="0" inputmode="numeric" />
+
+    <label for="zoladek_razy">Podanie do żołądka – razy dziennie</label>
+    <input id="zoladek_razy" type="number" min="0" inputmode="numeric" />
+
+    <label for="jelito_ml">Podanie do jelita – ilość (ml/godz)</label>
+    <input id="jelito_ml" type="number" min="0" inputmode="numeric" />
+
+    <button class="action" type="button" onclick="oblicz()">Oblicz</button>
+    <div id="wynik" class="result"></div>
+  </div>
+
+  <div id="page-leki" class="card" style="display:none">
+    <div class="drug-inputs">
+      <input id="lek_nazwa" placeholder="Nazwa leku" />
+      <input id="lek_dawka" placeholder="Dawka" />
+      <input id="lek_godzina" type="time" />
+    </div>
+
+    <button class="action" type="button" onclick="dodajLek()">+ Dodaj lek</button>
+    <button class="action secondary" type="button" onclick="wlaczPowiadomienia()">Włącz powiadomienia</button>
+    <button class="action muted" type="button" onclick="wyslijTestPowiadomienia()">Wyślij test powiadomienia</button>
+
+    <div class="small">
+      Najpierw kliknij „Włącz powiadomienia”, a dopiero potem test i przypomnienia o lekach.
+    </div>
+
+    <div id="lista-lekow"></div>
+  </div>
+
+  <script>
+    const STORAGE_KEYS = ['dzienna', 'zoladek_ml', 'zoladek_razy', 'jelito_ml'];
+    const DRUGS_KEY = 'drugs';
+    const DEVICE_ID_KEY = 'device_id';
+
+    let swRegistration = null;
+    let publicVapidKey = '';
+
+    document.getElementById('tab-zywienie').onclick = () => page('zywienie');
+    document.getElementById('tab-leki').onclick = () => page('leki');
+
+    window.addEventListener('load', async () => {
+      STORAGE_KEYS.forEach((id) => {
+        const value = localStorage.getItem(id);
+        if (value !== null) {
+          document.getElementById(id).value = value;
+        }
+      });
+
+      renderujLeki();
+      await zarejestrujServiceWorkera();
+      await pobierzPublicznyKlucz();
+      await odswiezStatusPowiadomien();
+      await wyslijLekiDoBackendu();
+    });
+
+    document.addEventListener('input', (event) => {
+      if (STORAGE_KEYS.includes(event.target.id)) {
+        localStorage.setItem(event.target.id, event.target.value);
+      }
+    });
+
+    function page(p) {
+      document.getElementById('page-zywienie').style.display = p === 'zywienie' ? 'block' : 'none';
+      document.getElementById('page-leki').style.display = p === 'leki' ? 'block' : 'none';
+      document.getElementById('tab-zywienie').classList.toggle('active', p === 'zywienie');
+      document.getElementById('tab-leki').classList.toggle('active', p === 'leki');
+    }
+
+    function dokument(id) {
+      return document.getElementById(id).value.trim();
+    }
+
+    function wyswietl(html) {
+      const el = document.getElementById('wynik');
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    function oblicz() {
+      const dzienna = Number(dokument('dzienna'));
+      const zoladekMl = Number(dokument('zoladek_ml'));
+      const zoladekRazy = Number(dokument('zoladek_razy'));
+      const jelitoMl = Number(dokument('jelito_ml'));
+
+      if (!dzienna) {
+        wyswietl('Wpisz porcją dzienną.');
+        return;
+      }
+
+      const doZoladka = zoladekMl && zoladekRazy ? zoladekMl * zoladekRazy : 0;
+      const pozostalo = Math.max(dzienna - doZoladka, 0);
+      const godzinyJelito = jelitoMl > 0 ? (pozostalo / jelitoMl) : 0;
+
+      wyswietl(`
+        <strong>Wynik:</strong><br>
+        Podanie do żołądka łącznie: <strong>${doZoladka.toFixed(0)} ml</strong><br>
+        Pozostaje do jelita: <strong>${pozostalo.toFixed(0)} ml</strong><br>
+        Czas podaży do jelita: <strong>${godzinyJelito.toFixed(2)} godz.</strong>
+      `);
+    }
+
+    function getDeviceId() {
+      let id = localStorage.getItem(DEVICE_ID_KEY);
+      if (!id) {
+        id = crypto.randomUUID();
+        localStorage.setItem(DEVICE_ID_KEY, id);
+      }
+      return id;
+    }
+
+    function getTimezone() {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Warsaw';
+    }
+
+    function pobierzLeki() {
+      try {
+        return JSON.parse(localStorage.getItem(DRUGS_KEY) || '[]');
+      } catch {
+        return [];
+      }
+    }
+
+    function zapiszLeki(leki) {
+      localStorage.setItem(DRUGS_KEY, JSON.stringify(leki));
+      renderujLeki();
+      wyslijLekiDoBackendu();
+    }
+
+    function renderujLeki() {
+      const lista = document.getElementById('lista-lekow');
+      const leki = pobierzLeki();
+
+      if (!leki.length) {
+        lista.innerHTML = '<p>Brak zapisanych leków.</p>';
+        return;
+      }
+
+      lista.innerHTML = leki.map((lek, index) => `
+        <div class="drug-card">
+          <div class="drug-row">
+            <strong>${escapeHtml(lek.name)}</strong>
+            <button class="link" type="button" onclick="usunLek(${index})">Usuń</button>
+          </div>
+          <div class="drug-meta">Dawka: ${escapeHtml(lek.dose || '-')}</div>
+          <div class="drug-meta">Godzina: ${escapeHtml(lek.time)}</div>
+        </div>
+      `).join('');
+    }
+
+    function dodajLek() {
+      const name = dokument('lek_nazwa');
+      const dose = dokument('lek_dawka');
+      const time = dokument('lek_godzina');
+
+      if (!name || !time) {
+        alert('Podaj nazwę leku i godzinę.');
+        return;
+      }
+
+      const leki = pobierzLeki();
+      leki.push({ name, dose, time });
+      leki.sort((a, b) => a.time.localeCompare(b.time));
+      zapiszLeki(leki);
+
+      document.getElementById('lek_nazwa').value = '';
+      document.getElementById('lek_dawka').value = '';
+      document.getElementById('lek_godzina').value = '';
+    }
+
+    function usunLek(index) {
+      const leki = pobierzLeki();
+      leki.splice(index, 1);
+      zapiszLeki(leki);
+    }
+
+    async function zarejestrujServiceWorkera() {
+      if (!('serviceWorker' in navigator)) {
+        ustawStatus('Ta przeglądarka nie obsługuje service workera.');
+        return;
+      }
+
+      try {
+        swRegistration = await navigator.serviceWorker.register('./service-worker.js');
+        await navigator.serviceWorker.ready;
+      } catch (error) {
+        console.error('Błąd rejestracji service workera:', error);
+        ustawStatus('Nie udało się uruchomić service workera.');
+      }
+    }
+
+    async function pobierzPublicznyKlucz() {
+      try {
+        const response = await fetch('/api/push/public-key');
+        const data = await response.json();
+        publicVapidKey = data.publicKey || '';
+      } catch (error) {
+        console.error('Nie udało się pobrać klucza publicznego:', error);
+      }
+    }
+
+    async function wlaczPowiadomienia() {
+      if (!('Notification' in window) || !('PushManager' in window)) {
+        ustawStatus('Ta przeglądarka nie obsługuje powiadomień push.');
+        return;
+      }
+
+      if (!swRegistration) {
+        await zarejestrujServiceWorkera();
+      }
+
+      if (!publicVapidKey) {
+        await pobierzPublicznyKlucz();
+      }
+
+      if (!publicVapidKey) {
+        ustawStatus('Brakuje publicznego klucza VAPID w backendzie.');
+        return;
+      }
+
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          ustawStatus('Powiadomienia są zablokowane. Zezwól na nie w Chrome i w ustawieniach Androida.');
+          return;
+        }
+
+        const existingSub = await swRegistration.pushManager.getSubscription();
+        const subscription = existingSub || await swRegistration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+        });
+
+        const response = await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            deviceId: getDeviceId(),
+            timezone: getTimezone(),
+            subscription
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.error || `HTTP ${response.status}`);
+        }
+
+        await wyslijLekiDoBackendu();
+        ustawStatus('Powiadomienia są aktywne.');
+      } catch (error) {
+        console.error('Błąd włączania powiadomień:', error);
+        ustawStatus(`Nie udało się włączyć powiadomień: ${error.message || 'nieznany błąd'}`);
+      }
+    }
+
+    async function wyslijTestPowiadomienia() {
+      try {
+        const response = await fetch('/api/push/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deviceId: getDeviceId() })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || `HTTP ${response.status}`);
+        }
+
+        ustawStatus('Test został wysłany. Jeśli nic nie przyszło, sprawdź uprawnienia w Androidzie.');
+      } catch (error) {
+        console.error('Błąd testu push:', error);
+        ustawStatus(`Test się nie udał: ${error.message || 'nieznany błąd'}`);
+      }
+    }
+
+    async function wyslijLekiDoBackendu() {
+      try {
+        await fetch('/api/drugs/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            deviceId: getDeviceId(),
+            timezone: getTimezone(),
+            drugs: pobierzLeki()
+          })
+        });
+      } catch (error) {
+        console.error('Nie udało się wysłać leków:', error);
+      }
+    }
+
+    async function odswiezStatusPowiadomien() {
+      if (!('Notification' in window) || !('PushManager' in window)) {
+        ustawStatus('Ta przeglądarka nie obsługuje powiadomień push.');
+        return;
+      }
+
+      if (Notification.permission === 'denied') {
+        ustawStatus('Powiadomienia są zablokowane w Chrome.');
+        return;
+      }
+
+      if (!swRegistration) {
+        ustawStatus('Service worker nie jest jeszcze gotowy.');
+        return;
+      }
+
+      const sub = await swRegistration.pushManager.getSubscription();
+      if (sub) {
+        ustawStatus('Powiadomienia są aktywne.');
+      } else if (Notification.permission === 'granted') {
+        ustawStatus('Jest zgoda, ale nie ma jeszcze zapisanej subskrypcji push. Kliknij „Włącz powiadomienia”.');
+      } else {
+        ustawStatus('Powiadomienia nie są jeszcze włączone.');
+      }
+    }
+
+    function ustawStatus(text) {
+      document.getElementById('push-status').textContent = `Status powiadomień: ${text}`;
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
