@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "kalkulator-zywienia-pwa",
+  "name": "zywienie-v14",
   "main": "src/worker.js",
   "compatibility_date": "2026-04-01",
   "assets": {
