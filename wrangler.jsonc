@@ -1,20 +1,12 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "zywienie-v14",
   "main": "src/worker.js",
-  "compatibility_date": "2026-04-01",
+  "compatibility_date": "2025-04-10",
   "assets": {
     "directory": "./public",
-    "binding": "ASSETS"
+    "not_found_handling": "single-page-application"
   },
   "triggers": {
     "crons": ["* * * * *"]
-  },
-  "vars": {
-    "APP_TIMEZONE_DEFAULT": "Europe/Warsaw",
-    "VAPID_CONTACT_EMAIL": "mailto:admin@example.com"
-  },
-  "observability": {
-    "enabled": true
   }
 }
