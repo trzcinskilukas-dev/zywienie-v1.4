@@ -511,25 +511,25 @@
     }
 
     async function wyslijTestPowiadomienia() {
-      try {
-        const response = await fetch(`${BACKEND}/api/push/test`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ deviceId: getDeviceId() })
-        });
+  try {
+    const response = await fetch(`${BACKEND}/api/push/test`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ deviceId: getDeviceId() })
+    });
 
-        const text = await response.text();
+    const data = await response.json().catch(() => null);
 
-        if (!response.ok) {
-          throw new Error(`Backend ${response.status}: ${text}`);
-        }
-
-        ustawStatus("wysłano test powiadomienia");
-      } catch (error) {
-        console.error("BŁĄD TESTU POWIADOMIEŃ:", error);
-        ustawStatus(`test push: ${error.message || "błąd"}`);
-      }
+    if (!response.ok) {
+      throw new Error(data?.error || `Backend ${response.status}`);
     }
+
+    ustawStatus(`test push: sent=${data?.sent ?? "?"}, removed=${data?.removed ?? "?"}`);
+  } catch (error) {
+    console.error("BŁĄD TESTU POWIADOMIEŃ:", error);
+    ustawStatus(`test push błąd: ${error.message || "błąd"}`);
+  }
+}
 
     async function odswiezStatusPowiadomien() {
       if (!("Notification" in window) || !("PushManager" in window)) {
