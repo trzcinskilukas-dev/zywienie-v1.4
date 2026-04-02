@@ -558,25 +558,31 @@
     }
 
     async function wyslijLekiDoBackendu(drugs) {
-      try {
-        const response = await fetch(`${BACKEND}/api/drugs/update`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            deviceId: getDeviceId(),
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            drugs
-          })
-        });
+  try {
+    const response = await fetch(`${BACKEND}/api/drugs/update`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        deviceId: getDeviceId(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        drugs
+      })
+    });
 
-        if (!response.ok) {
-          const text = await response.text();
-          console.error("Błąd zapisu leków:", response.status, text);
-        }
-      } catch (error) {
-        console.warn("Nie udało się wysłać listy leków do backendu.", error);
-      }
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      console.error("Błąd zapisu leków:", response.status, data);
+      ustawStatus(`błąd leków: ${data?.error || response.status}`);
+      return;
     }
+
+    console.log("Zapis leków OK:", data);
+  } catch (error) {
+    console.warn("Nie udało się wysłać listy leków do backendu.", error);
+    ustawStatus(`błąd leków: ${error.message || "błąd sieci"}`);
+  }
+}
 
     function ustawStatus(text) {
       document.getElementById("push-status").textContent = `Status powiadomień: ${text}`;
