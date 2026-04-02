@@ -1,11 +1,13 @@
 const CACHE_NAME = "enteral-care-cache-v8";
+
 const APP_SHELL = [
   "/",
   "/index.html",
   "/manifest.webmanifest",
   "/service-worker.js",
   "/icon-192.png",
-  "/icon-512.png"
+  "/icon-512.png",
+  "/badge-96.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -64,7 +66,7 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(data.title || "Powiadomienie o leku", {
       body: data.body || "Czas na lek.",
       icon: "/icon-192.png",
-      badge: "/icon-192.png",
+      badge: "/badge-96.png",
       vibrate: [200, 100, 200],
       data: { url: "/", ...data }
     })
@@ -73,6 +75,7 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
+
   const targetUrl = (event.notification.data && event.notification.data.url) || "/";
 
   event.waitUntil(
