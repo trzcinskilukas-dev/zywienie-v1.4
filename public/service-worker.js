@@ -1,4 +1,4 @@
-const CACHE_NAME = "enteral-care-cache-v6";
+const CACHE_NAME = "enteral-care-cache-v8";
 const APP_SHELL = [
   "/",
   "/index.html",
