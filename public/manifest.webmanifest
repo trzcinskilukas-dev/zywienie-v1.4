@@ -1,14 +1,14 @@
 {
-  "name": "Kalkulator żywienia i leków",
-  "short_name": "Kalkulator",
-  "description": "Aplikacja PWA do obliczania żywienia i przypominania o lekach.",
+  "name": "Enteral Care App",
+  "short_name": "Enteral Care",
+  "description": "Aplikacja PWA do obliczania żywienia, czasu pracy pompy i przypominania o lekach.",
   "lang": "pl",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#ffffff",
-  "theme_color": "#0078ff",
+  "background_color": "#f6efe5",
+  "theme_color": "#f6efe5",
   "icons": [
     {
       "src": "/icon-192.png",

@@ -3,351 +3,544 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Kalkulator żywienia</title>
+  <title>Enteral Care App</title>
+
+  <meta name="theme-color" content="#f6efe5" />
   <link rel="manifest" href="./manifest.webmanifest" />
-  <meta name="theme-color" content="#0078ff" />
   <link rel="apple-touch-icon" href="./icon-192.png" />
   <link rel="icon" sizes="192x192" href="./icon-192.png" />
   <link rel="icon" sizes="512x512" href="./icon-512.png" />
+
   <style>
+    :root {
+      --bg: #f6efe5;
+      --surface: rgba(255, 252, 247, 0.78);
+      --surface-strong: rgba(255, 255, 255, 0.86);
+      --border: rgba(142, 198, 201, 0.34);
+      --primary: #86c6c7;
+      --primary-dark: #69afb2;
+      --primary-deep: #528f94;
+      --text: #5a8387;
+      --muted: #89a5a6;
+      --shadow: 0 18px 48px rgba(164, 178, 180, 0.18);
+      --shadow-soft: 0 10px 28px rgba(164, 178, 180, 0.12);
+    }
+
     * { box-sizing: border-box; }
+
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 20px;
-      background: #f0f3f7;
-      color: #1a1a1a;
+      min-height: 100vh;
+      font-family: "Avenir Next", "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(243, 225, 207, 0.9), transparent 38%),
+        radial-gradient(circle at bottom right, rgba(221, 237, 242, 0.95), transparent 38%),
+        linear-gradient(180deg, #f7f0e6 0%, #f8f3ed 100%);
+      padding: 24px 16px 40px;
     }
-    h1 { text-align: center; margin-bottom: 25px; }
-    .status {
+
+    .app {
       max-width: 560px;
-      margin: 0 auto 16px auto;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: #fff7d6;
-      border: 1px solid #f0d77a;
-      font-size: 14px;
-      line-height: 1.4;
+      margin: 0 auto;
     }
-    .nav {
+
+    .hero {
+      background: linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0.2));
+      border: 1px solid rgba(255,255,255,0.45);
+      box-shadow: var(--shadow);
+      border-radius: 34px;
+      padding: 20px 20px 18px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .brand {
       display: flex;
-      justify-content: center;
-      margin-bottom: 25px;
-      gap: 8px;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
     }
+
+    .brand img {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: var(--primary-deep);
+      font-weight: 800;
+    }
+
+    .brand-subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .status {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid rgba(134,198,199,0.22);
+      color: var(--primary-deep);
+      font-size: 14px;
+    }
+
+    .nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 18px 0;
+    }
+
     .nav button {
-      padding: 10px 20px;
       border: none;
-      background: #dce7ff;
-      border-radius: 8px;
+      padding: 14px 18px;
       font-size: 16px;
+      font-weight: 700;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.58);
+      color: var(--text);
+      box-shadow: var(--shadow-soft);
       cursor: pointer;
     }
-    .nav .active { background: #0078ff; color: white; }
+
+    .nav button.active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+    }
+
     .card {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      max-width: 560px;
-      margin: auto;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 22px;
     }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
+
+    .section-title {
+      margin: 0 0 8px;
+      color: var(--primary-deep);
+      font-size: 23px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
     }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-    .action {
-      width: 100%;
-      padding: 12px;
-      margin-top: 14px;
-      background: #0078ff;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 17px;
-      cursor: pointer;
-    }
-    .secondary { background: #2b9348; }
-    .muted { background: #6c757d; }
-    .result {
-      background: #e6f1ff;
-      padding: 18px;
-      margin-top: 20px;
-      border-left: 5px solid #0078ff;
-      border-radius: 10px;
-      display: none;
+
+    .section-note {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 14px;
       line-height: 1.5;
     }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+      color: var(--primary-deep);
+      font-size: 15px;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid rgba(134,198,199,0.26);
+      background: rgba(255, 255, 255, 0.86);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 15px 16px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: rgba(105,175,178,0.72);
+      box-shadow: 0 0 0 4px rgba(134,198,199,0.16);
+    }
+
+    .action-row {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button.action,
+    button.secondary,
+    button.text-link {
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    button.action,
+    button.secondary {
+      width: 100%;
+      padding: 15px 18px;
+      border-radius: 18px;
+      font-size: 16px;
+      font-weight: 800;
+      box-shadow: var(--shadow-soft);
+    }
+
+    button.action {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+    }
+
+    button.secondary {
+      background: rgba(255,255,255,0.75);
+      color: var(--primary-deep);
+      border: 1px solid rgba(134,198,199,0.28);
+    }
+
+    .result {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.84), rgba(255,255,255,0.58));
+      border: 1px solid rgba(134,198,199,0.24);
+      display: none;
+    }
+
+    .result-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .metric {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(246, 250, 250, 0.92);
+      border: 1px solid rgba(134,198,199,0.18);
+    }
+
+    .metric-label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      display: block;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary-deep);
+      letter-spacing: -0.02em;
+    }
+
     .drug-inputs {
       display: grid;
       gap: 10px;
       margin-bottom: 10px;
     }
+
     .drug-card {
-      background: #f9fbff;
-      padding: 15px;
-      margin-top: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      border: 1px solid #dbe7ff;
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.56));
+      border: 1px solid rgba(134,198,199,0.22);
+      box-shadow: var(--shadow-soft);
     }
-    .drug-row {
+
+    .drug-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
+
+    .drug-name {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary-deep);
+    }
+
     .drug-meta {
-      font-size: 14px;
-      color: #444;
       margin-top: 6px;
-    }
-    .link {
-      color: #0078ff;
-      cursor: pointer;
-      text-decoration: underline;
-      background: none;
-      border: none;
-      padding: 0;
+      color: var(--muted);
       font-size: 14px;
     }
-    .small {
-      margin-top: 12px;
-      font-size: 13px;
-      color: #555;
-      line-height: 1.5;
+
+    button.text-link {
+      background: transparent;
+      color: var(--primary-deep);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: underline;
+      padding: 0;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 15px;
+      padding: 10px 0 0;
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 16px 12px 28px; }
+      .hero, .card { border-radius: 26px; }
+      .brand-title { font-size: 25px; }
+      .metric-value { font-size: 22px; }
     }
   </style>
 </head>
 <body>
-  <h1>Kalkulator żywienia</h1>
+  <div class="app">
+    <section class="hero">
+      <div class="brand">
+        <img src="./icon-192.png" alt="Enteral Care App" />
+        <div>
+          <h1 class="brand-title">Enteral Care App</h1>
+          <p class="brand-subtitle">Spokojny, czytelny kalkulator żywienia i przypomnień o lekach.</p>
+        </div>
+      </div>
+      <div id="push-status" class="status">Status powiadomień: sprawdzam...</div>
+    </section>
 
-  <div id="push-status" class="status">Status powiadomień: sprawdzam...</div>
-
-  <div class="nav">
-    <button id="tab-zywienie" class="active" type="button">Żywienie</button>
-    <button id="tab-leki" type="button">Leki</button>
-  </div>
-
-  <div id="page-zywienie" class="card">
-    <label for="dzienna">Porcja dzienna (ml)</label>
-    <input id="dzienna" type="number" min="0" inputmode="numeric" />
-
-    <label for="zoladek_ml">Podanie do żołądka – ilość (ml)</label>
-    <input id="zoladek_ml" type="number" min="0" inputmode="numeric" />
-
-    <label for="zoladek_razy">Podanie do żołądka – razy dziennie</label>
-    <input id="zoladek_razy" type="number" min="0" inputmode="numeric" />
-
-    <label for="jelito_ml">Podanie do jelita – ilość (ml/godz)</label>
-    <input id="jelito_ml" type="number" min="0" inputmode="numeric" />
-
-    <button class="action" type="button" onclick="oblicz()">Oblicz</button>
-    <div id="wynik" class="result"></div>
-  </div>
-
-  <div id="page-leki" class="card" style="display:none">
-    <div class="drug-inputs">
-      <input id="lek_nazwa" placeholder="Nazwa leku" />
-      <input id="lek_dawka" placeholder="Dawka" />
-      <input id="lek_godzina" type="time" />
+    <div class="nav">
+      <button id="tab-zywienie" class="active" type="button">Żywienie</button>
+      <button id="tab-leki" type="button">Leki</button>
     </div>
 
-    <button class="action" type="button" onclick="dodajLek()">+ Dodaj lek</button>
-    <button class="action secondary" type="button" onclick="wlaczPowiadomienia()">Włącz powiadomienia</button>
-    <button class="action muted" type="button" onclick="wyslijTestPowiadomienia()">Wyślij test powiadomienia</button>
+    <section id="page-zywienie" class="card">
+      <h2 class="section-title">Plan żywienia</h2>
+      <p class="section-note">Wpisz dzienną porcję, bolusy do żołądka i przepływ pompy. Aplikacja pokaże też, ile godzin dziecko będzie odłączone od pompy.</p>
 
-    <div class="small">
-      Najpierw kliknij „Włącz powiadomienia”, a dopiero potem test i przypomnienia o lekach.
-    </div>
+      <div class="grid">
+        <div>
+          <label for="dzienna">Porcja dzienna (ml)</label>
+          <input id="dzienna" type="number" min="0" inputmode="decimal" />
+        </div>
+        <div>
+          <label for="zoladek_ml">Podanie do żołądka – ilość jednego podania (ml)</label>
+          <input id="zoladek_ml" type="number" min="0" inputmode="decimal" />
+        </div>
+        <div>
+          <label for="zoladek_razy">Podanie do żołądka – ile razy dziennie</label>
+          <input id="zoladek_razy" type="number" min="0" inputmode="decimal" />
+        </div>
+        <div>
+          <label for="jelito_ml">Podanie do jelita – przepływ pompy (ml/godz)</label>
+          <input id="jelito_ml" type="number" min="0" inputmode="decimal" />
+        </div>
+      </div>
 
-    <div id="lista-lekow"></div>
+      <div class="action-row">
+        <button class="action" type="button" onclick="oblicz()">Oblicz</button>
+      </div>
+
+      <div id="wynik" class="result"></div>
+    </section>
+
+    <section id="page-leki" class="card" style="display:none">
+      <h2 class="section-title">Leki i przypomnienia</h2>
+      <p class="section-note">Dodaj leki i godziny. Gdy powiadomienia są włączone, aplikacja będzie mogła przypomnieć o podaniu.</p>
+
+      <div class="drug-inputs">
+        <input id="lek_nazwa" placeholder="Nazwa leku" />
+        <input id="lek_dawka" placeholder="Dawka" />
+        <input id="lek_godzina" type="time" />
+      </div>
+
+      <div class="action-row">
+        <button class="action" type="button" onclick="dodajLek()">+ Dodaj lek</button>
+        <button class="secondary" type="button" onclick="wlaczPowiadomienia()">Włącz powiadomienia</button>
+      </div>
+
+      <div id="lista-lekow"></div>
+    </section>
   </div>
 
   <script>
-    const STORAGE_KEYS = ['dzienna', 'zoladek_ml', 'zoladek_razy', 'jelito_ml'];
-    const DRUGS_KEY = 'drugs';
-    const DEVICE_ID_KEY = 'device_id';
-
+    const STORAGE_KEYS = ["dzienna", "zoladek_ml", "zoladek_razy", "jelito_ml"];
+    const DRUGS_KEY = "drugs";
+    const BACKEND = window.location.origin;
+    const PUBLIC_VAPID_KEY = window.PUBLIC_VAPID_KEY || "";
     let swRegistration = null;
-    let publicVapidKey = '';
 
-    document.getElementById('tab-zywienie').onclick = () => page('zywienie');
-    document.getElementById('tab-leki').onclick = () => page('leki');
+    document.getElementById("tab-zywienie").onclick = () => page("zywienie");
+    document.getElementById("tab-leki").onclick = () => page("leki");
 
-    window.addEventListener('load', async () => {
+    window.addEventListener("load", async () => {
       STORAGE_KEYS.forEach((id) => {
-        const value = localStorage.getItem(id);
-        if (value !== null) {
-          document.getElementById(id).value = value;
+        const saved = localStorage.getItem(id);
+        if (saved !== null) document.getElementById(id).value = saved;
+      });
+
+      document.addEventListener("input", (event) => {
+        if (STORAGE_KEYS.includes(event.target.id)) {
+          localStorage.setItem(event.target.id, event.target.value);
         }
       });
 
-      renderujLeki();
+      wczytajLeki();
+      oblicz(false);
       await zarejestrujServiceWorkera();
-      await pobierzPublicznyKlucz();
       await odswiezStatusPowiadomien();
-      await wyslijLekiDoBackendu();
     });
 
-    document.addEventListener('input', (event) => {
-      if (STORAGE_KEYS.includes(event.target.id)) {
-        localStorage.setItem(event.target.id, event.target.value);
-      }
-    });
-
-    function page(p) {
-      document.getElementById('page-zywienie').style.display = p === 'zywienie' ? 'block' : 'none';
-      document.getElementById('page-leki').style.display = p === 'leki' ? 'block' : 'none';
-      document.getElementById('tab-zywienie').classList.toggle('active', p === 'zywienie');
-      document.getElementById('tab-leki').classList.toggle('active', p === 'leki');
+    function page(tab) {
+      document.getElementById("page-zywienie").style.display = tab === "zywienie" ? "block" : "none";
+      document.getElementById("page-leki").style.display = tab === "leki" ? "block" : "none";
+      document.getElementById("tab-zywienie").classList.toggle("active", tab === "zywienie");
+      document.getElementById("tab-leki").classList.toggle("active", tab === "leki");
     }
 
-    function dokument(id) {
-      return document.getElementById(id).value.trim();
+    function valueOf(id) {
+      return Number(document.getElementById(id).value || 0);
     }
 
-    function wyswietl(html) {
-      const el = document.getElementById('wynik');
-      el.innerHTML = html;
-      el.style.display = 'block';
-    }
+    function formatHours(hours) {
+      const safe = Math.max(0, Number(hours) || 0);
+      let full = Math.floor(safe);
+      let minutes = Math.round((safe - full) * 60);
 
-    function oblicz() {
-      const dzienna = Number(dokument('dzienna'));
-      const zoladekMl = Number(dokument('zoladek_ml'));
-      const zoladekRazy = Number(dokument('zoladek_razy'));
-      const jelitoMl = Number(dokument('jelito_ml'));
-
-      if (!dzienna) {
-        wyswietl('Wpisz porcją dzienną.');
-        return;
+      if (minutes === 60) {
+        full += 1;
+        minutes = 0;
       }
 
-      const doZoladka = zoladekMl && zoladekRazy ? zoladekMl * zoladekRazy : 0;
-      const pozostalo = Math.max(dzienna - doZoladka, 0);
-      const godzinyJelito = jelitoMl > 0 ? (pozostalo / jelitoMl) : 0;
-
-      wyswietl(`
-        <strong>Wynik:</strong><br>
-        Podanie do żołądka łącznie: <strong>${doZoladka.toFixed(0)} ml</strong><br>
-        Pozostaje do jelita: <strong>${pozostalo.toFixed(0)} ml</strong><br>
-        Czas podaży do jelita: <strong>${godzinyJelito.toFixed(2)} godz.</strong>
-      `);
+      return `${full} godz. ${minutes} min`;
     }
 
-    function getDeviceId() {
-      let id = localStorage.getItem(DEVICE_ID_KEY);
-      if (!id) {
-        id = crypto.randomUUID();
-        localStorage.setItem(DEVICE_ID_KEY, id);
-      }
-      return id;
+    function oblicz(showResult = true) {
+      const dzienna = valueOf("dzienna");
+      const zoladekMl = valueOf("zoladek_ml");
+      const zoladekRazy = valueOf("zoladek_razy");
+      const jelitoMl = valueOf("jelito_ml");
+
+      const doZoladka = zoladekMl * zoladekRazy;
+      const pozostaloDoPompy = Math.max(dzienna - doZoladka, 0);
+      const godzinyNaPompie = jelitoMl > 0 ? pozostaloDoPompy / jelitoMl : 0;
+      const godzinyOdlaczenia = Math.max(24 - godzinyNaPompie, 0);
+
+      if (!showResult && !dzienna) return;
+
+      const wynik = document.getElementById("wynik");
+      wynik.style.display = "block";
+      wynik.innerHTML = `
+        <strong>Wynik obliczeń</strong>
+        <div class="result-grid">
+          <div class="metric">
+            <span class="metric-label">Podanie do żołądka łącznie</span>
+            <span class="metric-value">${doZoladka.toFixed(0)} ml</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Pozostaje do pompy / jelita</span>
+            <span class="metric-value">${pozostaloDoPompy.toFixed(0)} ml</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Czas pracy pompy</span>
+            <span class="metric-value">${formatHours(godzinyNaPompie)}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Czas odłączenia od pompy</span>
+            <span class="metric-value">${formatHours(godzinyOdlaczenia)}</span>
+          </div>
+        </div>
+      `;
     }
 
-    function getTimezone() {
-      return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Warsaw';
-    }
-
-    function pobierzLeki() {
+    function getDrugs() {
       try {
-        return JSON.parse(localStorage.getItem(DRUGS_KEY) || '[]');
+        return JSON.parse(localStorage.getItem(DRUGS_KEY) || "[]");
       } catch {
         return [];
       }
     }
 
-    function zapiszLeki(leki) {
-      localStorage.setItem(DRUGS_KEY, JSON.stringify(leki));
+    function setDrugs(drugs) {
+      localStorage.setItem(DRUGS_KEY, JSON.stringify(drugs));
       renderujLeki();
-      wyslijLekiDoBackendu();
+      wyslijLekiDoBackendu(drugs);
+    }
+
+    function wczytajLeki() {
+      renderujLeki();
+      wyslijLekiDoBackendu(getDrugs());
     }
 
     function renderujLeki() {
-      const lista = document.getElementById('lista-lekow');
-      const leki = pobierzLeki();
+      const lista = document.getElementById("lista-lekow");
+      const leki = getDrugs();
 
       if (!leki.length) {
-        lista.innerHTML = '<p>Brak zapisanych leków.</p>';
+        lista.innerHTML = '<div class="empty">Nie masz jeszcze zapisanych leków.</div>';
         return;
       }
 
       lista.innerHTML = leki.map((lek, index) => `
         <div class="drug-card">
-          <div class="drug-row">
-            <strong>${escapeHtml(lek.name)}</strong>
-            <button class="link" type="button" onclick="usunLek(${index})">Usuń</button>
+          <div class="drug-top">
+            <div class="drug-name">${escapeHtml(lek.name)}</div>
+            <button class="text-link" type="button" onclick="usunLek(${index})">Usuń</button>
           </div>
-          <div class="drug-meta">Dawka: ${escapeHtml(lek.dose || '-')}</div>
+          <div class="drug-meta">Dawka: ${escapeHtml(lek.dose || "-")}</div>
           <div class="drug-meta">Godzina: ${escapeHtml(lek.time)}</div>
         </div>
-      `).join('');
+      `).join("");
     }
 
     function dodajLek() {
-      const name = dokument('lek_nazwa');
-      const dose = dokument('lek_dawka');
-      const time = dokument('lek_godzina');
+      const name = document.getElementById("lek_nazwa").value.trim();
+      const dose = document.getElementById("lek_dawka").value.trim();
+      const time = document.getElementById("lek_godzina").value;
 
       if (!name || !time) {
-        alert('Podaj nazwę leku i godzinę.');
+        alert("Podaj nazwę leku i godzinę.");
         return;
       }
 
-      const leki = pobierzLeki();
-      leki.push({ name, dose, time });
-      leki.sort((a, b) => a.time.localeCompare(b.time));
-      zapiszLeki(leki);
+      const drugs = getDrugs();
+      drugs.push({ name, dose, time });
+      drugs.sort((a, b) => a.time.localeCompare(b.time));
+      setDrugs(drugs);
 
-      document.getElementById('lek_nazwa').value = '';
-      document.getElementById('lek_dawka').value = '';
-      document.getElementById('lek_godzina').value = '';
+      document.getElementById("lek_nazwa").value = "";
+      document.getElementById("lek_dawka").value = "";
+      document.getElementById("lek_godzina").value = "";
     }
 
     function usunLek(index) {
-      const leki = pobierzLeki();
-      leki.splice(index, 1);
-      zapiszLeki(leki);
+      const drugs = getDrugs();
+      drugs.splice(index, 1);
+      setDrugs(drugs);
     }
 
     async function zarejestrujServiceWorkera() {
-      if (!('serviceWorker' in navigator)) {
-        ustawStatus('Ta przeglądarka nie obsługuje service workera.');
+      if (!("serviceWorker" in navigator)) {
+        ustawStatus("ta przeglądarka nie obsługuje service workera");
         return;
       }
 
       try {
-        swRegistration = await navigator.serviceWorker.register('./service-worker.js');
+        swRegistration = await navigator.serviceWorker.register("./service-worker.js");
         await navigator.serviceWorker.ready;
       } catch (error) {
-        console.error('Błąd rejestracji service workera:', error);
-        ustawStatus('Nie udało się uruchomić service workera.');
-      }
-    }
-
-    async function pobierzPublicznyKlucz() {
-      try {
-        const response = await fetch('/api/push/public-key');
-        const data = await response.json();
-        publicVapidKey = data.publicKey || '';
-      } catch (error) {
-        console.error('Nie udało się pobrać klucza publicznego:', error);
+        console.error(error);
+        ustawStatus("nie udało się zarejestrować service workera");
       }
     }
 
     async function wlaczPowiadomienia() {
-      if (!('Notification' in window) || !('PushManager' in window)) {
-        ustawStatus('Ta przeglądarka nie obsługuje powiadomień push.');
+      if (!("Notification" in window) || !("PushManager" in window)) {
+        ustawStatus("to urządzenie nie obsługuje powiadomień push");
         return;
       }
 
@@ -355,135 +548,112 @@
         await zarejestrujServiceWorkera();
       }
 
-      if (!publicVapidKey) {
-        await pobierzPublicznyKlucz();
-      }
-
-      if (!publicVapidKey) {
-        ustawStatus('Brakuje publicznego klucza VAPID w backendzie.');
-        return;
-      }
-
       try {
         const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-          ustawStatus('Powiadomienia są zablokowane. Zezwól na nie w Chrome i w ustawieniach Androida.');
+        if (permission !== "granted") {
+          ustawStatus("powiadomienia są zablokowane");
+          return;
+        }
+
+        if (!PUBLIC_VAPID_KEY) {
+          ustawStatus("brak klucza VAPID po stronie frontendu");
           return;
         }
 
         const existingSub = await swRegistration.pushManager.getSubscription();
         const subscription = existingSub || await swRegistration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+          applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
         });
 
-        const response = await fetch('/api/push/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            deviceId: getDeviceId(),
-            timezone: getTimezone(),
-            subscription
-          })
+        const response = await fetch(`${BACKEND}/api/push/subscribe`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(subscription)
         });
 
         if (!response.ok) {
-          const error = await response.json().catch(() => ({}));
-          throw new Error(error.error || `HTTP ${response.status}`);
+          throw new Error(`Backend zwrócił ${response.status}`);
         }
 
-        await wyslijLekiDoBackendu();
-        ustawStatus('Powiadomienia są aktywne.');
+        ustawStatus("powiadomienia są aktywne");
       } catch (error) {
-        console.error('Błąd włączania powiadomień:', error);
-        ustawStatus(`Nie udało się włączyć powiadomień: ${error.message || 'nieznany błąd'}`);
-      }
-    }
-
-    async function wyslijTestPowiadomienia() {
-      try {
-        const response = await fetch('/api/push/test', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ deviceId: getDeviceId() })
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || `HTTP ${response.status}`);
-        }
-
-        ustawStatus('Test został wysłany. Jeśli nic nie przyszło, sprawdź uprawnienia w Androidzie.');
-      } catch (error) {
-        console.error('Błąd testu push:', error);
-        ustawStatus(`Test się nie udał: ${error.message || 'nieznany błąd'}`);
-      }
-    }
-
-    async function wyslijLekiDoBackendu() {
-      try {
-        await fetch('/api/drugs/update', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            deviceId: getDeviceId(),
-            timezone: getTimezone(),
-            drugs: pobierzLeki()
-          })
-        });
-      } catch (error) {
-        console.error('Nie udało się wysłać leków:', error);
+        console.error(error);
+        ustawStatus("nie udało się włączyć powiadomień");
       }
     }
 
     async function odswiezStatusPowiadomien() {
-      if (!('Notification' in window) || !('PushManager' in window)) {
-        ustawStatus('Ta przeglądarka nie obsługuje powiadomień push.');
+      if (!("Notification" in window) || !("PushManager" in window)) {
+        ustawStatus("to urządzenie nie obsługuje powiadomień push");
         return;
       }
 
-      if (Notification.permission === 'denied') {
-        ustawStatus('Powiadomienia są zablokowane w Chrome.');
+      if (Notification.permission === "denied") {
+        ustawStatus("powiadomienia są zablokowane");
         return;
       }
 
       if (!swRegistration) {
-        ustawStatus('Service worker nie jest jeszcze gotowy.');
+        ustawStatus("service worker jeszcze nie jest gotowy");
         return;
       }
 
       const sub = await swRegistration.pushManager.getSubscription();
       if (sub) {
-        ustawStatus('Powiadomienia są aktywne.');
-      } else if (Notification.permission === 'granted') {
-        ustawStatus('Jest zgoda, ale nie ma jeszcze zapisanej subskrypcji push. Kliknij „Włącz powiadomienia”.');
+        ustawStatus("powiadomienia są aktywne");
+      } else if (Notification.permission === "granted") {
+        ustawStatus("zgoda jest nadana, ale nie ma jeszcze aktywnej subskrypcji");
       } else {
-        ustawStatus('Powiadomienia nie są jeszcze włączone.');
+        ustawStatus("powiadomienia są jeszcze niewłączone");
+      }
+    }
+
+    async function wyslijLekiDoBackendu(drugs) {
+      try {
+        await fetch(`${BACKEND}/api/drugs/update`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ deviceId: getDeviceId(), drugs })
+        });
+      } catch (error) {
+        console.warn("Nie udało się wysłać listy leków do backendu.", error);
       }
     }
 
     function ustawStatus(text) {
-      document.getElementById('push-status').textContent = `Status powiadomień: ${text}`;
+      document.getElementById("push-status").textContent = `Status powiadomień: ${text}`;
+    }
+
+    function getDeviceId() {
+      let deviceId = localStorage.getItem("deviceId");
+      if (!deviceId) {
+        deviceId = crypto.randomUUID();
+        localStorage.setItem("deviceId", deviceId);
+      }
+      return deviceId;
     }
 
     function urlBase64ToUint8Array(base64String) {
-      const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
       const rawData = window.atob(base64);
       const outputArray = new Uint8Array(rawData.length);
+
       for (let i = 0; i < rawData.length; ++i) {
         outputArray[i] = rawData.charCodeAt(i);
       }
+
       return outputArray;
     }
 
     function escapeHtml(value) {
       return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\\"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
   </script>
 </body>

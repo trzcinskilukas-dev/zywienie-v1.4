@@ -1,4 +1,4 @@
-const CACHE_NAME = "kalkulator-cache-v5";
+const CACHE_NAME = "enteral-care-cache-v6";
 const APP_SHELL = [
   "/",
   "/index.html",
@@ -20,7 +20,9 @@ self.addEventListener("activate", (event) => {
     Promise.all([
       caches.keys().then((keys) =>
         Promise.all(
-          keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+          keys
+            .filter((key) => key !== CACHE_NAME)
+            .map((key) => caches.delete(key))
         )
       ),
       self.clients.claim()
@@ -63,17 +65,14 @@ self.addEventListener("push", (event) => {
       body: data.body || "Czas na lek.",
       icon: "/icon-192.png",
       badge: "/icon-192.png",
-      data: {
-        url: "/",
-        ...data
-      }
+      vibrate: [200, 100, 200],
+      data: { url: "/", ...data }
     })
   );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-
   const targetUrl = (event.notification.data && event.notification.data.url) || "/";
 
   event.waitUntil(
