@@ -19,7 +19,7 @@ async function handleRequest(request, env) {
   }
 
   if (url.pathname === '/api/health') {
-    return json({ ok: true, app: 'kalkulator-zywienia-pwa' });
+    return json({ ok: true, app: 'enteral-care-app' });
   }
 
   if (url.pathname === '/api/push/public-key') {
@@ -42,7 +42,11 @@ async function handleRequest(request, env) {
     return handleDeviceUnregister(request, env);
   }
 
-  return env.ASSETS.fetch(request);
+  if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
+    return env.ASSETS.fetch(request);
+  }
+
+  return new Response('Not found', { status: 404 });
 }
 
 function getSupabase(env) {
